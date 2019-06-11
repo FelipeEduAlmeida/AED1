@@ -133,13 +133,13 @@ public:
 
 class Procedimento{
 public:
-	string chave;
+	char chave;
 	ListaComando comandos;
 	NoComando* cabecote = comandos.prim;
 	int cont = 0;
 	Procedimento(){
 	}
-	Procedimento(string chave){
+	Procedimento(char chave){
 		this->chave = chave;
 	}
 	void novoComando(Comando comando){
@@ -147,7 +147,7 @@ public:
 	}
 	
 	NoComando* proximoComando(){
-		cabecote = cabecote->prox;
+		cabecote = comandos.prim->prox;
 		NoComando* proximo = cabecote;
 		return proximo;
 	}
@@ -231,7 +231,7 @@ public:
 	}
 
 	NoProcedimento* getTopo(){
-		return topo;
+		return topo->prox;
 	}
 };
 
@@ -251,28 +251,30 @@ public:
 	}
 
 	void executa(){
-		Procedimento aux = Procedimento("Z");
-		NoProcedimento* px = lista.busca(aux);
-		p.empilhar(px->proc);
-	
+		Procedimento aux = Procedimento('Z');
+		NoProcedimento* pz = lista.busca(aux);
+
+		p.empilhar(pz->proc);
+		
 		while (p.vazia() != true){
 			NoProcedimento* proc_topo = p.getTopo();
+			cout << proc_topo->proc.chave;
 			NoComando* comando = proc_topo->proc.proximoComando();
-			cout << "eaei";
-
+			
 			if (comando->comando.chave == "ENFILEIRA"){
 				mensagem.enfileira(comando->comando.letra);
 			}
-			if (comando->comando.chave == "DESEMFILEIRA")
+			if (comando->comando.chave == "DESENFILEIRA")
 			{	
 				mensagem.desenfileira();	
 			}
 			if (comando->comando.chave.length() == 2)
 			{
-				NoProcedimento* busca = lista.busca(Procedimento(comando->comando.chave));
+				NoProcedimento* busca = lista.busca(Procedimento(comando->comando.chave[0]));
 				p.empilhar(busca->proc);
 			}
 			else{
+				cout << "chegou";
 				p.desempilhar();
 			}
 
@@ -283,9 +285,46 @@ public:
 int main()
 {
 	Pilha pilha;
+	string linhax;
 	ListaProcedimento lista;
+	string entrada[50];
+	int cont = 0;
+	int aux = 0;
 
-	Procedimento Z = Procedimento("Z");
+	do{
+		cont=0;
+		aux = 0;
+
+		do{
+			getline(cin, linhax);
+			entrada[cont] = linhax;
+			cont++;
+		}while(entrada[cont-1].length() > 2);
+		
+		cont=0;
+		char letra = entrada[cont+aux][0];
+		Procedimento proc = Procedimento(entrada[0][0]);
+		aux += cont;
+		cont++;
+
+		Comando comando;
+		while(entrada[cont].length() > 1){
+			if (entrada[cont].length() != 14){ 
+				comando = Comando("ENFILEIRA", entrada[cont][12]);
+				proc.novoComando(comando);
+				cout << comando.letra;
+			}
+			else{
+				comando = Comando("DESENFILEIRA");
+				proc.novoComando(comando);
+			}
+			cont++;
+		};
+
+		lista.insere(proc);
+	}while(entrada[cont-1][0] != '~');
+
+	/*Procedimento Z = Procedimento("Z");
 	Comando comando = Comando("ENFILEIRA", 'A');
 	Z.novoComando(comando);
 	Comando comando2 = Comando("DESEMPILHA");
@@ -293,11 +332,11 @@ int main()
 
 	NoComando* x = Z.proximoComando();
 
-	lista.insere(Z);
+	lista.insere(Z);*/
 
 	Interpretador i = Interpretador(lista);
 	i.executa();
 
-	i.mensagem.print();
+	//i.mensagem.print();
 	return 0;
 }
